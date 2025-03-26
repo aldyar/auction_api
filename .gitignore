@@ -1,0 +1,21 @@
+# Виртуальное окружение
+venv/
+.env
+.venv/
+
+# Кеши Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Лог-файлы
+*.log
+
+# Миграции Alembic
+migrations/
+
+# Настройки IDE и редакторов
+.vscode/
+.idea/
+*.swp
