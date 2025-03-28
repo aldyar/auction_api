@@ -1,6 +1,6 @@
 from sqlalchemy import BigInteger, Float, String
 from sqlalchemy.orm import Mapped, mapped_column
-from core.database import Base
+from src.core.database import Base
 
 class User(Base):
     __tablename__ = 'users'
