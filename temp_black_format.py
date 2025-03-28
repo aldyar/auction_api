@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from sqlalchemy import func
-from src.core.database import AsyncSessionLocal
+from core.database import AsyncSessionLocal
 from src.users.schemas import Users
 from src.users.models import User
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,17 +8,15 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
 
 class UserService:
-
     def connection(func):
-        async def inner(*args, **kwargs):
-            async with AsyncSessionLocal() as session:
-                return await func(session, *args, **kwargs)
-        return inner
+    async def inner(*args, **kwargs):
+        async with AsyncSessionLocal() as session:
+            return await func(session, *args, **kwargs)
+    return inner
         
-    @connection
+
     def get_user(self, tg_id: int) -> Users | None:
         result =  self.session.scalar(select(User).where(User.tg_id==tg_id))
-        print(result.tg_id)
         
         return Users.model_validate(result) if result else None
 

@@ -1,36 +1,49 @@
 from typing import List
 from src.bids.models import Bid
 from src.bids.schemas import BidSchema
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+from src.core.database import AsyncSessionLocal, get_session
+
 
 class BidService:
-    def __init__(self, session):
-        self.session = session
+    @staticmethod
+    async def create_bid(bid_data: BidSchema):
+        async with get_session() as session:
+            bid = Bid(**bid_data.dict())
+            session.add(bid)
+            await session.commit()
+            await session.refresh(bid)
+            return bid
 
-    def create_bid(self, bid_data: BidSchema):
-        bid = Bid(**bid_data.dict())
-        self.session.add(bid)
-        self.session.commit()
-        self.session.refresh(bid)
-        return bid
+    @staticmethod
+    async def get_bid(bid_id: int):
+        async with get_session() as session:
+            result = await session.execute(select(Bid).filter(Bid.id == bid_id))
+            return result.scalar_one_or_none()
 
-    def get_bid(self, bid_id: int):
-        return self.session.query(Bid).filter(Bid.id == bid_id).first()
+    @staticmethod
+    async def update_bid(bid_id: int, bid_data: BidSchema):
+        async with get_session() as session:
+            bid = await BidService.get_bid(bid_id)
+            if bid:
+                for key, value in bid_data.dict().items():
+                    setattr(bid, key, value)
+                await session.commit()
+                await session.refresh(bid)
+            return bid
 
-    def update_bid(self, bid_id: int, bid_data: BidSchema):
-        bid = self.get_bid(bid_id)
-        if bid:
-            for key, value in bid_data.dict().items():
-                setattr(bid, key, value)
-            self.session.commit()
-            self.session.refresh(bid)
-        return bid
+    @staticmethod
+    async def delete_bid(bid_id: int):
+        async with get_session() as session:
+            bid = await BidService.get_bid(bid_id)
+            if bid:
+                await session.delete(bid)
+                await session.commit()
+            return bid
 
-    def delete_bid(self, bid_id: int):
-        bid = self.get_bid(bid_id)
-        if bid:
-            self.session.delete(bid)
-            self.session.commit()
-        return bid
-
-    def list_bids(self) -> List[BidSchema]:
-        return self.session.query(Bid).all()
+    @staticmethod
+    async def list_bids() -> List[Bid]:
+        async with get_session() as session:
+            result = await session.execute(select(Bid))
+            return result.scalars().all()

@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.core.database import async_session  
+from src.core.database import AsyncSessionLocal, get_session
 from src.users.router import router as users_router
 from src.orders.router import router as orders_router
 from src.bids.router import router as bids_router
@@ -25,7 +25,7 @@ async def startup():
 
 @app.on_event("shutdown")
 async def shutdown():
-    await async_session.close_all()  
+    await AsyncSessionLocal().close()  
     print("🛑 API остановлен!")
 
 # Тестовый эндпоинт

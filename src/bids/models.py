@@ -1,7 +1,7 @@
 from sqlalchemy import BigInteger, Integer, String, DateTime, Boolean, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
-from core.database import Base
+from src.core.database import Base
 
 class Bid(Base):
     __tablename__ = 'bids'
