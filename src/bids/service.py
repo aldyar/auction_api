@@ -1,49 +1,119 @@
 from typing import List
-from src.bids.models import Bid
-from src.bids.schemas import BidSchema
+from src.bids.models import Bid, BidInvalid
+from src.bids.schemas import BidInvalidSchema, BidSchema, CreateBids
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from src.core.database import AsyncSessionLocal, get_session
 
 
 class BidService:
-    @staticmethod
-    async def create_bid(bid_data: BidSchema):
-        async with get_session() as session:
-            bid = Bid(**bid_data.dict())
-            session.add(bid)
-            await session.commit()
-            await session.refresh(bid)
-            return bid
 
-    @staticmethod
-    async def get_bid(bid_id: int):
-        async with get_session() as session:
-            result = await session.execute(select(Bid).filter(Bid.id == bid_id))
-            return result.scalar_one_or_none()
+    def connection(func):
+        async def inner(*args, **kwargs):
+            async with AsyncSessionLocal() as session:
+                return await func(session, *args, **kwargs)
+        return inner
+    
 
-    @staticmethod
-    async def update_bid(bid_id: int, bid_data: BidSchema):
-        async with get_session() as session:
-            bid = await BidService.get_bid(bid_id)
-            if bid:
-                for key, value in bid_data.dict().items():
-                    setattr(bid, key, value)
-                await session.commit()
-                await session.refresh(bid)
-            return bid
+    @connection
+    async def create_bid(session, bid_data: List[CreateBids]) -> bool:
+        bids = [
+            Bid(
+                id = i.id,
+                tg_id=None,
+                request_date=i.request_date,
+                full_name=i.full_name,
+                phone=i.phone,
+                request_type=i.request_type,
+                question=i.question,
+                category=i.category,
+                start_price=i.start_price,
+                blitz_price=i.blitz_price,
+                valid=i.valid,
+                bot_taken = 'new'
 
-    @staticmethod
-    async def delete_bid(bid_id: int):
-        async with get_session() as session:
-            bid = await BidService.get_bid(bid_id)
-            if bid:
-                await session.delete(bid)
-                await session.commit()
-            return bid
+            )
+            for i in bid_data
+        ]
 
-    @staticmethod
-    async def list_bids() -> List[Bid]:
-        async with get_session() as session:
-            result = await session.execute(select(Bid))
-            return result.scalars().all()
+        session.add_all(bids)  
+        await session.commit()  
+        return True  
+
+        
+
+    @connection
+    async def fetch_bids(session) -> List[BidSchema] | None:
+        result = await session.execute(select(Bid))
+        bids = result.scalars().all()
+
+
+
+
+        if bids:
+
+            return [
+                BidSchema(
+                    id = i.id,
+                    tg_id=i.tg_id,
+                    request_date=i.request_date,
+                    full_name=i.full_name,
+                    phone=i.phone,
+                    request_type=i.request_type,
+                    question=i.question,
+                    category=i.category,
+                    start_price=i.start_price,
+                    blitz_price=i.blitz_price,
+                    valid=i.valid
+                )
+                for i in bids
+            ]
+        else:
+            return None
+
+
+    @connection
+    async def fetch_invalid_bids(session) -> List[BidInvalidSchema] | None:
+        result = await session.execute(select(BidInvalid))
+        bids = result.scalars().all()
+        if bids:
+
+            return [
+                BidInvalidSchema(
+                    tg_id=i.tg_id,
+                    request_date=i.request_date,
+                    full_name=i.full_name,
+                    phone=i.phone,
+                    request_type=i.request_type,
+                    question=i.question,
+                    category=i.category,
+                    start_price=i.start_price,
+                    blitz_price=i.blitz_price,
+                    
+                )
+                for i in bids
+            ]
+        else:
+            return None
+
+    @connection
+    async def test(session, bid_data: List[BidSchema] ) -> bool:
+        bids = [
+            BidInvalid(
+                tg_id=i.tg_id,
+                request_date=i.request_date,
+                full_name=i.full_name,
+                phone=i.phone,
+                request_type=i.request_type,
+                question=i.question,
+                category=i.category,
+                start_price=i.start_price,
+                blitz_price=i.blitz_price,
+                
+            )
+            for i in bid_data
+        ]
+
+        session.add_all(bids)  
+        await session.commit()  
+        return True  

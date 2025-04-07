@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import uvicorn
 from src.core.database import AsyncSessionLocal, get_session
 from src.users.router import router as users_router
 from src.orders.router import router as orders_router
@@ -33,3 +34,7 @@ async def shutdown():
 async def root():
     
     return {"message": 'Welcome to auction API v1.0'}
+
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=2000, reload=True)
