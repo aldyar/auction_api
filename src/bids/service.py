@@ -29,7 +29,7 @@ class BidService:
                 category=i.category,
                 start_price=i.start_price,
                 blitz_price=i.blitz_price,
-                valid=i.valid,
+                valid=True,
                 bot_taken = 'new'
 
             )
@@ -80,16 +80,10 @@ class BidService:
 
             return [
                 BidInvalidSchema(
+                    id = i.id,
                     tg_id=i.tg_id,
-                    request_date=i.request_date,
-                    full_name=i.full_name,
-                    phone=i.phone,
-                    request_type=i.request_type,
-                    question=i.question,
-                    category=i.category,
-                    start_price=i.start_price,
-                    blitz_price=i.blitz_price,
-                    
+                    sold_price =i.sold_price,
+                    invalid_reason = i.invalid_reason
                 )
                 for i in bids
             ]
@@ -117,3 +111,9 @@ class BidService:
         session.add_all(bids)  
         await session.commit()  
         return True  
+
+
+    @connection
+    async def get_not_sold_bids(session):
+        result = await session.execute(select(Bid.id, Bid.bot_taken).where(Bid.bot_taken == 'not sold'))
+        return [{'id': row.id, 'status': row.bot_taken} for row in result.all()]

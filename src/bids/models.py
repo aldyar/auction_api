@@ -33,6 +33,8 @@ class BidInvalid(Base):
     category: Mapped[str] = mapped_column(String(100), nullable=False)
     start_price: Mapped[int] = mapped_column(Integer, nullable=False)
     blitz_price: Mapped[int] = mapped_column(Integer, nullable=True)
+    sold_price: Mapped[int] = mapped_column(Integer,nullable=True)  
+    invalid_reason: Mapped[str] = mapped_column(Text)   
 
 
 # class ActiveBids(Base):

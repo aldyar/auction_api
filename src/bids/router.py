@@ -13,18 +13,17 @@ router = APIRouter()
 async def create_bid(bid_data: List[CreateBids]):
     return await BidService.create_bid(bid_data)
 
-@router.post('/create_invalid_bid', response_model=bool)
-async def create_invalid_bid(bid_data: List[BidInvalidSchema]):
-    return await BidService.test(bid_data)
+# @router.post('/create_invalid_bid', response_model=bool)
+# async def create_invalid_bid(bid_data: List[BidInvalidSchema]):
+#     return await BidService.test(bid_data)
 
-@router.get("/", response_model=List[BidSchema])
-async def fetch_bids():
-    bids = await BidService.fetch_bids()
-    if bids:
-        return bids
-    return []
+# @router.get("/", response_model=List[BidSchema])
+# async def fetch_bids():
+#     bids = await BidService.fetch_bids()
+#     if bids:
+#         return bids
+#     return []
 
-#lawef
 
 @router.get('/invalid_bids', response_model=List[BidInvalidSchema])
 async def fetch_invalid_bids():
@@ -32,3 +31,8 @@ async def fetch_invalid_bids():
     if bids:
         return bids
     return []
+
+@router.post('/get_not_sold')
+async def get_not_sold():
+    bids = await BidService.get_not_sold_bids()
+    return bids
