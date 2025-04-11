@@ -23,7 +23,8 @@ async def fetch_bids():
     if bids:
         return bids
     return []
-     
+
+#lawef
 
 @router.get('/invalid_bids', response_model=List[BidInvalidSchema])
 async def fetch_invalid_bids():
